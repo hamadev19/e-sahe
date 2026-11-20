@@ -1,0 +1,1465 @@
+```html
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="خشتەی من">
+    <title>خشتەی ڕۆژانەم | پلاندانەر و بەدواداچوون</title>
+
+    <!-- فۆنتی کوردی Vazirmatn -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Vazirmatn', 'sans-serif'],
+                    },
+                    colors: {
+                        darkBg: '#0b1120',
+                        darkCard: '#151f32',
+                        darkBorder: '#24324d',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Phosphor Icons بۆ ئایکۆنی جوان و مۆدێرن -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        * {
+            font-family: 'Vazirmatn', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* شاردنەوەی سکڕۆڵباڕی ئاسۆیی بۆ پۆلەکان */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* ئەنیمەیشنی نەرم */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.25s ease-out forwards;
+        }
+        /* بازنەی ڕێژەی پێشکەوتن */
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.5s ease-in-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 dark:bg-darkBg dark:text-slate-100 min-h-screen pb-24 transition-colors duration-300 select-none">
+
+    <!-- سەرپەڕە (Header) -->
+    <header class="sticky top-0 z-30 bg-white/85 dark:bg-darkBg/85 backdrop-blur-lg border-b border-slate-200 dark:border-darkBorder px-4 py-3">
+        <div class="max-w-2xl mx-auto flex items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                    <i class="ph-bold ph-calendar-check text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base sm:text-lg leading-tight">خشتەی ڕۆژانەم</h1>
+                    <p id="header-date-display" class="text-xs text-slate-500 dark:text-slate-400 font-medium">ئەمڕۆ</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- دوگمەی دابەزاندنی ئەپ (PWA) -->
+                <button id="install-app-btn" onclick="handleInstallClick()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-md shadow-indigo-500/20 transition">
+                    <i class="ph-bold ph-download-simple text-base"></i>
+                    <span>دابەزاندن</span>
+                </button>
+
+                <!-- دوگمەی گۆڕینی دۆخی تاریک/ڕووناک -->
+                <button onclick="toggleTheme()" aria-label="گۆڕینی ڕەنگ" class="w-9 h-9 rounded-xl bg-slate-200/70 dark:bg-darkCard border border-slate-300/50 dark:border-darkBorder flex items-center justify-center text-slate-700 dark:text-amber-400 active:scale-90 transition">
+                    <i id="theme-icon" class="ph-fill ph-sun text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ناوەڕۆکی سەرەکی -->
+    <main class="max-w-2xl mx-auto px-4 pt-4 space-y-5">
+
+        <!-- بەشی ١: خشتەی ئەمڕۆ (View: Today) -->
+        <section id="view-today" class="space-y-4 animate-fade-in">
+            
+            <!-- کارتی پوختەی خێرای ئەمڕۆ -->
+            <div class="bg-gradient-to-br from-indigo-600 via-indigo-700 to-slate-900 rounded-3xl p-5 text-white shadow-xl shadow-indigo-950/30 relative overflow-hidden">
+                <div class="absolute -left-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div class="flex items-center justify-between gap-4 relative z-10">
+                    <div class="space-y-2 flex-1">
+                        <div class="inline-flex items-center gap-1.5 bg-white/15 px-2.5 py-1 rounded-full text-xs font-medium">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span id="selected-day-badge">خشتەی ئەمڕۆ</span>
+                        </div>
+                        <h2 id="motivational-title" class="text-lg sm:text-xl font-extrabold leading-snug">بەردەوام بە، تۆ دەتوانیت!</h2>
+                        <div class="flex flex-wrap items-center gap-3 text-xs pt-1">
+                            <span class="bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 px-2.5 py-1 rounded-lg font-bold">
+                                ✅ کراوە: <b id="stat-done">0</b>
+                            </span>
+                            <span class="bg-rose-500/20 border border-rose-400/30 text-rose-200 px-2.5 py-1 rounded-lg font-bold">
+                                ❌ نەکراوە: <b id="stat-missed">0</b>
+                            </span>
+                            <span class="bg-amber-500/20 border border-amber-400/30 text-amber-200 px-2.5 py-1 rounded-lg font-bold">
+                                ⏳ ماوە: <b id="stat-pending">0</b>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- بازنەی ڕێژەی جێبەجێکردن -->
+                    <div class="relative w-20 h-20 flex items-center justify-center shrink-0">
+                        <svg class="w-20 h-20" viewBox="0 0 80 80">
+                            <circle class="text-white/15" stroke-width="7" stroke="currentColor" fill="transparent" r="32" cx="40" cy="40"/>
+                            <circle id="progress-circle" class="text-emerald-400 progress-ring__circle" stroke-width="7" stroke-dasharray="201.06" stroke-dashoffset="201.06" stroke-linecap="round" stroke="currentColor" fill="transparent" r="32" cx="40" cy="40"/>
+                        </svg>
+                        <span id="progress-percent" class="absolute text-base font-black">0%</span>
+                    </div>
+                </div>
+
+                <!-- دوگمەی بینینی ڕاپۆرتی چیت کرد و چیت نەکرد -->
+                <div class="mt-4 pt-3 border-t border-white/15 flex items-center justify-between gap-2">
+                    <button onclick="openEndOfDayModal()" class="flex-1 bg-white text-indigo-900 hover:bg-indigo-50 active:scale-98 font-extrabold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow transition">
+                        <i class="ph-bold ph-list-checks text-base"></i>
+                        <span>پوختەی کۆتایی: چیم کرد و چیم نەکرد؟</span>
+                    </button>
+                    <button onclick="openAddCategoryModal()" title="زیادکردنی بەشی نوێ" class="bg-white/15 hover:bg-white/25 text-white p-2.5 rounded-xl text-xs font-bold flex items-center gap-1 transition">
+                        <i class="ph-bold ph-folder-plus text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- فلتەری پۆلە جیاکراوەکان (Categories) -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between px-1">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400">خشتە جیاکراوەکان (بەشەکان):</span>
+                    <button onclick="openAddCategoryModal()" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">+ بەشی نوێ</button>
+                </div>
+                <div id="category-tabs" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                    <!-- بە شێوەی داینامیک پڕ دەبێتەوە -->
+                </div>
+            </div>
+
+            <!-- گەڕان و فلتەری دۆخ (کراوە، نەکراوە، ماوە) -->
+            <div class="flex flex-col sm:flex-row gap-2">
+                <div class="relative flex-1">
+                    <i class="ph ph-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                    <input type="text" id="search-input" oninput="renderTasks()" placeholder="گەڕان لەناو کارەکاندا..." class="w-full bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-2xl pr-10 pl-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 transition">
+                </div>
+                <div class="flex items-center gap-1.5 bg-white dark:bg-darkCard p-1 rounded-2xl border border-slate-200 dark:border-darkBorder overflow-x-auto no-scrollbar">
+                    <button onclick="setStatusFilter('all')" data-status="all" class="status-filter-btn active px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap">هەموو</button>
+                    <button onclick="setStatusFilter('done')" data-status="done" class="status-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap">✅ کراوە</button>
+                    <button onclick="setStatusFilter('missed')" data-status="missed" class="status-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap">❌ نەکراوە</button>
+                    <button onclick="setStatusFilter('pending')" data-status="pending" class="status-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap">⏳ ماوە</button>
+                </div>
+            </div>
+
+            <!-- لیستی خشتەی کارەکان -->
+            <div id="tasks-container" class="space-y-3">
+                <!-- کارەکان لێرە دەردەکەون -->
+            </div>
+
+            <!-- بۆکسی تێبینی ڕۆژانە -->
+            <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-3xl p-4 space-y-2 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <label for="daily-note" class="text-sm font-bold flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                        <i class="ph-duotone ph-notebook text-indigo-500 text-xl"></i>
+                        <span>تێبینی و هەڵسەنگاندنی ئەمڕۆم</span>
+                    </label>
+                    <span id="note-saved-badge" class="text-[11px] text-emerald-500 font-bold opacity-0 transition-opacity">پاشەکەوت کرا ✓</span>
+                </div>
+                <textarea id="daily-note" rows="2" oninput="saveDailyNote()" placeholder="ئەمڕۆ چۆن بوو؟ چ شتێک ڕێگر بوو لە جێبەجێکردنی کارەکانت؟ لێرە بینووسە..." class="w-full bg-slate-50 dark:bg-darkBg/70 border border-slate-200 dark:border-darkBorder rounded-2xl p-3 text-sm focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+            </div>
+        </section>
+
+        <!-- بەشی ٢: AI سەعی (View: AI Study Assistant) -->
+        <section id="view-ai" class="hidden space-y-3 animate-fade-in">
+            <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-3xl overflow-hidden shadow-sm flex flex-col h-[calc(100vh-11.5rem)] min-h-[460px]">
+                
+                <!-- سەرپەڕەی AI سەعی -->
+                <div class="p-4 bg-gradient-to-l from-indigo-600 via-purple-600 to-slate-900 text-white flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center text-2xl shadow">
+                            🧠
+                        </div>
+                        <div>
+                            <h2 class="font-extrabold text-sm sm:text-base flex items-center gap-1.5">
+                                <span>مامۆستای زیرەک (AI سەعی)</span>
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            </h2>
+                            <p class="text-[11px] text-indigo-100">یاریدەدەری خوێندن، ڕوونکردنەوەی وانە و دانانی خشتەی سەعی</p>
+                        </div>
+                    </div>
+                    <button onclick="clearAiChat()" title="سڕینەوەی گفتوگۆ" class="bg-white/15 hover:bg-white/25 text-white px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition">
+                        <i class="ph-bold ph-trash"></i>
+                        <span class="hidden sm:inline">پاککردنەوە</span>
+                    </button>
+                </div>
+
+                <!-- دوگمە خێراکانی سەعی (Quick Prompts) -->
+                <div class="p-2.5 bg-slate-50 dark:bg-darkBg/60 border-b border-slate-200 dark:border-darkBorder flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+                    <button onclick="triggerQuickAi('schedule')" class="shrink-0 bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 dark:text-indigo-300 border border-indigo-500/25 px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition">
+                        📅 خشتەیەکی سەعی ئەمڕۆم بۆ دابنێ
+                    </button>
+                    <button onclick="triggerQuickAi('explain')" class="shrink-0 bg-purple-500/15 hover:bg-purple-500/25 text-purple-600 dark:text-purple-300 border border-purple-500/25 px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition">
+                        📖 بابەتێکم بۆ ڕوون بکەرەوە
+                    </button>
+                    <button onclick="triggerQuickAi('quiz')" class="shrink-0 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-300 border border-emerald-500/25 px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition">
+                        📝 تاقیکردنەوەم لێ بکە (Quiz)
+                    </button>
+                    <button onclick="triggerQuickAi('tips')" class="shrink-0 bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-300 border border-amber-500/25 px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition">
+                        ⚡ چۆن بە خێرایی و بێ بێزاربوون سەعی بکەم؟
+                    </button>
+                </div>
+
+                <!-- ناوچەی نامەکان (Chat Messages) -->
+                <div id="ai-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3">
+                    <!-- نامەی بەخێرهاتنی سەرەتا -->
+                    <div class="flex items-start gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 text-sm font-bold shadow">AI</div>
+                        <div class="bg-slate-100 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl rounded-tr-sm p-3.5 text-xs sm:text-sm leading-relaxed space-y-2 max-w-[88%]">
+                            <p class="font-extrabold text-indigo-600 dark:text-indigo-400">سڵاو قوتابی زیرەک! 👋 من یاریدەدەری تایبەتی سەعیکردنتم.</p>
+                            <p>دەتوانم لەمانەدا هاوکارت بم:</p>
+                            <ul class="list-disc list-inside space-y-1 text-slate-600 dark:text-slate-300 text-xs">
+                                <li>دانانی خشتەی سەعی (پۆمۆدۆرۆ) و زیادکردنی ڕاستەوخۆ بۆ ناو خشتەی ڕۆژانەت.</li>
+                                <li>ڕوونکردنەوەی هەر بابەتێکی بیرکاری، فیزیا، کیمیا، ئینگلیزی، کوردی و عەرەبی.</li>
+                                <li>وەرگرتنی <b>وێنەی لاپەڕەی کتێب یان پرسیارێک</b> و شیکارکردنی بە کوردی!</li>
+                                <li>دروستکردنی پرسیار و تاقیکردنەوە (Quiz) بۆ پێداچوونەوە.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- پێشاندانی وێنەی هەڵبژێردراو پێش ناردن -->
+                <div id="ai-image-preview-bar" class="hidden px-4 py-2 bg-indigo-500/10 border-t border-indigo-500/20 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-2">
+                        <img id="ai-image-preview-thumb" src="" alt="وێنەی پرسیار" class="w-10 h-10 rounded-lg object-cover border border-indigo-400">
+                        <span class="text-xs font-bold text-indigo-600 dark:text-indigo-300">وێنەیەک ئامادەیە بۆ شیکارکردن</span>
+                    </div>
+                    <button onclick="removeAiImage()" class="text-rose-500 hover:bg-rose-500/15 p-1.5 rounded-lg text-xs font-bold">لابردن ✕</button>
+                </div>
+
+                <!-- بۆکسی نووسینی پرسیار و بارکردنی وێنە -->
+                <form onsubmit="sendAiMessage(event)" class="p-3 bg-white dark:bg-darkCard border-t border-slate-200 dark:border-darkBorder flex items-center gap-2 shrink-0">
+                    <input type="file" id="ai-image-input" accept="image/*" class="hidden" onchange="handleAiImageSelect(event)">
+                    <button type="button" onclick="document.getElementById('ai-image-input').click()" title="ناردنی وێنەی پرسیار یان کتێب" class="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-darkBg hover:bg-indigo-500/15 text-slate-600 dark:text-slate-300 hover:text-indigo-500 flex items-center justify-center shrink-0 transition">
+                        <i class="ph-bold ph-camera text-xl"></i>
+                    </button>
+                    <input type="text" id="ai-user-input" placeholder="پرسیارێکی سەعی بنووسە یان داوای خشتە بکە..." class="flex-1 bg-slate-100 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-indigo-500">
+                    <button type="submit" id="ai-send-btn" class="w-10 h-10 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/25 transition">
+                        <i class="ph-bold ph-paper-plane-left text-lg"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- بەشی ٣: ئامار و جیاکردنەوەی کراوە و نەکراوەکان (View: Summary) -->
+        <section id="view-summary" class="hidden space-y-4 animate-fade-in">
+            <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-3xl p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-extrabold flex items-center gap-2">
+                        <i class="ph-duotone ph-chart-pie-slice text-indigo-500 text-2xl"></i>
+                        <span>شیکاری و جیاکردنەوەی کارەکان</span>
+                    </h2>
+                    <button onclick="copySummaryReport()" class="bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 active:scale-95 transition">
+                        <i class="ph-bold ph-copy"></i>
+                        <span>کۆپیکردنی ڕاپۆرت</span>
+                    </button>
+                </div>
+
+                <!-- دوو ستوونی جیاکراوە: ئەوانەی کردووتن vs ئەوانەی نەتکردوون -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- لیستی ئەوانەی کردووتن -->
+                    <div class="bg-emerald-500/10 border border-emerald-500/25 rounded-2xl p-4 space-y-2.5">
+                        <h3 class="font-extrabold text-sm text-emerald-600 dark:text-emerald-400 flex items-center justify-between">
+                            <span>✅ ئەوانەی کردووتن (جێبەجێکراو)</span>
+                            <span id="summary-done-count" class="bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                        </h3>
+                        <ul id="summary-done-list" class="space-y-2 text-xs"></ul>
+                    </div>
+
+                    <!-- لیستی ئەوانەی نەتکردوون -->
+                    <div class="bg-rose-500/10 border border-rose-500/25 rounded-2xl p-4 space-y-2.5">
+                        <h3 class="font-extrabold text-sm text-rose-600 dark:text-rose-400 flex items-center justify-between">
+                            <span>❌ ئەوانەی نەتکردوون (لەدەستچوو)</span>
+                            <span id="summary-missed-count" class="bg-rose-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                        </h3>
+                        <ul id="summary-missed-list" class="space-y-2 text-xs"></ul>
+                    </div>
+                </div>
+
+                <!-- ئامار بەپێی بەشەکان (Categories Breakdown) -->
+                <div class="pt-2 space-y-3">
+                    <h3 class="font-bold text-sm text-slate-600 dark:text-slate-300">ئاستی جێبەجێکردن بەپێی بەشەکان:</h3>
+                    <div id="category-stats-list" class="space-y-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- بەشی ٣: تۆماری ڕۆژانی پێشوو (View: History) -->
+        <section id="view-history" class="hidden space-y-4 animate-fade-in">
+            <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-darkBorder rounded-3xl p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-extrabold flex items-center gap-2">
+                            <i class="ph-duotone ph-clock-counter-clockwise text-indigo-500 text-2xl"></i>
+                            <span>تۆماری ڕۆژەکان</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">هەر ڕۆژێک هەڵبژێریت خشتەی ئەو ڕۆژەت پیشان دەدات</p>
+                    </div>
+                    <button onclick="resetToSampleData()" class="text-xs text-rose-500 hover:underline font-bold">ڕێکخستنەوەی نموونە</button>
+                </div>
+
+                <!-- هەڵبژاردنی بەروار -->
+                <div class="flex items-center gap-2">
+                    <input type="date" id="date-picker" onchange="changeSelectedDate(this.value)" class="flex-1 bg-slate-50 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl px-4 py-2.5 text-sm font-bold focus:outline-none focus:border-indigo-500">
+                    <button onclick="goToToday()" class="bg-indigo-600 text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow">ئەمڕۆ</button>
+                </div>
+
+                <!-- لیستی ڕۆژە تۆمارکراوەکان -->
+                <div id="history-days-list" class="space-y-2.5"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- مینیوی خوارەوەی مۆبایل (Bottom Navigation Bar) -->
+    <nav class="fixed bottom-0 inset-x-0 z-30 bg-white/90 dark:bg-darkCard/95 backdrop-blur-lg border-t border-slate-200 dark:border-darkBorder px-2 py-2">
+        <div class="max-w-2xl mx-auto flex items-center justify-around">
+            <button onclick="switchTab('today')" id="nav-today" class="nav-btn active flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-indigo-600 dark:text-indigo-400 transition">
+                <i class="ph-fill ph-calendar-blank text-2xl"></i>
+                <span class="text-[11px] font-bold">خشتە</span>
+            </button>
+
+            <button onclick="switchTab('ai')" id="nav-ai" class="nav-btn flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-slate-500 dark:text-slate-400 transition relative">
+                <span class="absolute -top-0.5 right-2 w-2 h-2 rounded-full bg-purple-500"></span>
+                <i class="ph-bold ph-sparkle text-2xl"></i>
+                <span class="text-[11px] font-bold">AI سەعی</span>
+            </button>
+
+            <!-- دوگمەی سەرەکی زیادکردنی کار (+) -->
+            <button onclick="openTaskModal()" aria-label="زیادکردنی کاری نوێ" class="-mt-7 w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 text-white shadow-lg shadow-indigo-500/40 flex items-center justify-center active:scale-90 transition">
+                <i class="ph-bold ph-plus text-2xl"></i>
+            </button>
+
+            <button onclick="switchTab('summary')" id="nav-summary" class="nav-btn flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-slate-500 dark:text-slate-400 transition">
+                <i class="ph-bold ph-chart-bar text-2xl"></i>
+                <span class="text-[11px] font-bold">ئامار</span>
+            </button>
+
+            <button onclick="switchTab('history')" id="nav-history" class="nav-btn flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-slate-500 dark:text-slate-400 transition">
+                <i class="ph-bold ph-clock-counter-clockwise text-2xl"></i>
+                <span class="text-[11px] font-bold">ڕۆژەکان</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- مۆداڵی زیادکردن و دەستکاریکردنی کار -->
+    <div id="task-modal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white dark:bg-darkCard w-full max-w-lg rounded-t-3xl sm:rounded-3xl border border-slate-200 dark:border-darkBorder p-6 space-y-4 animate-fade-in shadow-2xl">
+            <div class="flex items-center justify-between">
+                <h3 id="modal-title" class="text-lg font-extrabold">زیادکردنی کار بۆ خشتە</h3>
+                <button onclick="closeTaskModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-darkBg flex items-center justify-center text-slate-500">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+
+            <form id="task-form" onsubmit="saveTask(event)" class="space-y-4">
+                <input type="hidden" id="edit-task-id">
+                
+                <div>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-300">ناوی کار یان ئەرکەکە *</label>
+                    <input type="text" id="task-title" required placeholder="نموونە: خوێندنی وانەی بیرکاری یان کۆدینگ..." class="w-full bg-slate-50 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-300">بەش (خشتە)</label>
+                        <select id="task-category" class="w-full bg-slate-50 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl px-3 py-3 text-sm focus:outline-none focus:border-indigo-500"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-300">ئاستی گرنگی</label>
+                        <select id="task-priority" class="w-full bg-slate-50 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl px-3 py-3 text-sm focus:outline-none focus:border-indigo-500">
+                            <option value="high">🔴 زۆر گرنگ</option>
+                            <option value="medium" selected>🟡 ئاسایی</option>
+                            <option value="low">🟢 کەم</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-300">کاتژمێری دەستپێک</label>
+                        <input type="time" id="task-start-time" value="09:00" class="w-full bg-slate-50 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-300">کاتژمێری کۆتایی</label>
+                        <input type="time" id="task-end-time" value="10:00" class="w-full bg-slate-50 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold mb-1.5 text-slate-600 dark:text-slate-300">دۆخی ئێستا</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="task-status" value="pending" checked class="peer hidden">
+                            <div class="text-center py-2.5 rounded-xl border border-slate-200 dark:border-darkBorder peer-checked:bg-amber-500/20 peer-checked:border-amber-500 peer-checked:text-amber-500 text-xs font-bold transition">⏳ ماوە</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="task-status" value="done" class="peer hidden">
+                            <div class="text-center py-2.5 rounded-xl border border-slate-200 dark:border-darkBorder peer-checked:bg-emerald-500/20 peer-checked:border-emerald-500 peer-checked:text-emerald-500 text-xs font-bold transition">✅ کردم</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="task-status" value="missed" class="peer hidden">
+                            <div class="text-center py-2.5 rounded-xl border border-slate-200 dark:border-darkBorder peer-checked:bg-rose-500/20 peer-checked:border-rose-500 peer-checked:text-rose-500 text-xs font-bold transition">❌ نەمکرد</div>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-indigo-500/30 transition">
+                    پاشەکەوتکردن لە خشتەدا
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- مۆداڵی پوختەی کۆتایی ڕۆژ (چیم کرد و چیم نەکرد) -->
+    <div id="eod-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkCard w-full max-w-lg max-h-[85vh] flex flex-col rounded-3xl border border-slate-200 dark:border-darkBorder overflow-hidden animate-fade-in shadow-2xl">
+            <div class="p-5 bg-gradient-to-l from-indigo-600 to-slate-900 text-white flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-extrabold">پوختەی لێپرسینەوەی ڕۆژانە</h3>
+                    <p id="eod-date-subtitle" class="text-xs text-indigo-200">ئەنجامی کارەکانی ئەمڕۆت</p>
+                </div>
+                <button onclick="closeEndOfDayModal()" class="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-white">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto space-y-4 flex-1">
+                <!-- خشتەی خێرای ژمارەکان -->
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-emerald-500/10 border border-emerald-500/25 rounded-2xl p-3">
+                        <div id="eod-done-num" class="text-2xl font-black text-emerald-500">0</div>
+                        <div class="text-[11px] font-bold text-slate-500 dark:text-slate-400">کردووتە ✅</div>
+                    </div>
+                    <div class="bg-rose-500/10 border border-rose-500/25 rounded-2xl p-3">
+                        <div id="eod-missed-num" class="text-2xl font-black text-rose-500">0</div>
+                        <div class="text-[11px] font-bold text-slate-500 dark:text-slate-400">نەتکردووە ❌</div>
+                    </div>
+                    <div class="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-3">
+                        <div id="eod-pending-num" class="text-2xl font-black text-amber-500">0</div>
+                        <div class="text-[11px] font-bold text-slate-500 dark:text-slate-400">ماوە ⏳</div>
+                    </div>
+                </div>
+
+                <!-- ئەوانەی کردووتن -->
+                <div>
+                    <h4 class="text-xs font-extrabold text-emerald-500 mb-2">✅ ئەو کارانەی ئەمڕۆ ئەنجامت دان:</h4>
+                    <div id="eod-done-items" class="space-y-1.5 text-xs"></div>
+                </div>
+
+                <!-- ئەوانەی نەتکردوون -->
+                <div>
+                    <h4 class="text-xs font-extrabold text-rose-500 mb-2">❌ ئەو کارانەی نەتکردن (یان ماونەتەوە):</h4>
+                    <div id="eod-missed-items" class="space-y-1.5 text-xs"></div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-200 dark:border-darkBorder flex gap-2">
+                <button onclick="markAllPendingAsMissed()" class="flex-1 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 font-bold text-xs py-3 rounded-2xl transition">
+                    ماوەکان بکە بە «نەکراوە»
+                </button>
+                <button onclick="copySummaryReport()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-2xl shadow transition">
+                    کۆپیکردنی پوختە 📋
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- مۆداڵی زیادکردنی بەشی نوێ (Category) -->
+    <div id="category-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-3xl border border-slate-200 dark:border-darkBorder p-5 space-y-4 animate-fade-in">
+            <div class="flex items-center justify-between">
+                <h3 class="font-extrabold text-base">زیادکردنی خشتە (بەشی نوێ)</h3>
+                <button onclick="closeAddCategoryModal()" class="text-slate-400"><i class="ph-bold ph-x"></i></button>
+            </div>
+            <form onsubmit="saveNewCategory(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold mb-1">ناوی بەشەکە</label>
+                    <input type="text" id="new-cat-name" required placeholder="نموونە: خوێندنەوەی کتێب، کار..." class="w-full bg-slate-50 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-xl px-3 py-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">ئیمۆجی</label>
+                    <input type="text" id="new-cat-icon" value="📌" maxlength="4" class="w-full bg-slate-50 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold mb-1">ڕەنگ</label>
+                    <select id="new-cat-color" class="w-full bg-slate-50 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-xl px-3 py-2.5 text-sm">
+                        <option value="indigo">شین / مۆر</option>
+                        <option value="emerald">سەوز</option>
+                        <option value="amber">زەرد / پرتەقاڵی</option>
+                        <option value="rose">سوور / پەمەیی</option>
+                        <option value="cyan">شینی ئاسمانی</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl text-sm">زیادکردن</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- مۆداڵی ڕێنمایی دابەزاندنی PWA -->
+    <div id="pwa-help-modal" class="fixed inset-0 z-50 hidden bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-darkCard w-full max-w-md rounded-3xl border border-slate-200 dark:border-darkBorder p-6 space-y-4 animate-fade-in">
+            <div class="flex items-center justify-between">
+                <h3 class="font-extrabold text-base flex items-center gap-2">
+                    <i class="ph-fill ph-device-mobile text-indigo-500 text-xl"></i>
+                    <span>دابەزاندن وەک ئەپ (PWA)</span>
+                </h3>
+                <button onclick="document.getElementById('pwa-help-modal').classList.add('hidden')" class="text-slate-400"><i class="ph-bold ph-x"></i></button>
+            </div>
+            <div class="space-y-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                <p>ئەم سایتە وەک ئەپێکی سەربەخۆ دروستکراوە و دەتوانیت بیخەیتە سەر شاشەی مۆبایلەکەت:</p>
+                <div class="bg-slate-100 dark:bg-darkBg p-3 rounded-2xl space-y-1">
+                    <p class="font-bold text-indigo-500">📱 بۆ مۆبایلی ئەندرۆید (Chrome):</p>
+                    <p>سێ خاڵەکەی سەرەوەی بڕاوزەرەکە دابگرە و کلیک لە <b>«Add to Home screen»</b> یان <b>«Install app»</b> بکە.</p>
+                </div>
+                <div class="bg-slate-100 dark:bg-darkBg p-3 rounded-2xl space-y-1">
+                    <p class="font-bold text-cyan-500">🍎 بۆ ئایفۆن (Safari):</p>
+                    <p>دوگمەی <b>Share</b> لە خوارەوە دابگرە و پاشان <b>«Add to Home Screen»</b> هەڵبژێرە.</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('pwa-help-modal').classList.add('hidden')" class="w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl text-sm">تێگەیشتم</button>
+        </div>
+    </div>
+
+    <!-- ئاگادارکەرەوەی خێرا (Toast Notification) -->
+    <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2.5 rounded-2xl text-xs font-extrabold shadow-xl opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2">
+        <span id="toast-message">پاشەکەوت کرا</span>
+    </div>
+
+    <script>
+        // ==========================================
+        // ١. ڕێکخستنی PWA (Manifest & Service Worker)
+        // ==========================================
+        (function setupPWA() {
+            const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#4f46e5"/><path d="M150 265l70 70 145-145" stroke="#34d399" stroke-width="48" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+            const iconUrl = 'data:image/svg+xml;base64,' + btoa(svgIcon);
+
+            const manifest = {
+                name: "خشتەی ڕۆژانەم - پلاندانەر",
+                short_name: "خشتەی من",
+                description: "ئەپی تایبەت بە ڕێکخستنی خشتەی ڕۆژانە و بەدواداچوونی کارەکان بە زمانی کوردی",
+                start_url: ".",
+                display: "standalone",
+                background_color: "#0b1120",
+                theme_color: "#4f46e5",
+                dir: "rtl",
+                lang: "ckb",
+                icons: [
+                    { src: iconUrl, sizes: "192x192", type: "image/svg+xml" },
+                    { src: iconUrl, sizes: "512x512", type: "image/svg+xml" }
+                ]
+            };
+
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestURL;
+            document.head.appendChild(link);
+
+            // تۆمارکردنی Service Worker بۆ کارکردنی ئۆفلاین
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'kurdish-schedule-v1';
+                    self.addEventListener('install', (e) => {
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                    });
+                `;
+                const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+            }
+        })();
+
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        function handleInstallClick() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+            } else {
+                document.getElementById('pwa-help-modal').classList.remove('hidden');
+            }
+        }
+
+        // ==========================================
+        // ٢. داتا و پێکهاتەی خشتە جیاکراوەکان
+        // ==========================================
+        const DEFAULT_CATEGORIES = [
+            { id: 'study', name: 'خوێندن و وانە', icon: '📚', color: 'indigo' },
+            { id: 'coding', name: 'کۆدینگ و پڕۆگرامسازی', icon: '💻', color: 'cyan' },
+            { id: 'sport', name: 'وەرزش و تەندروستی', icon: '💪', color: 'emerald' },
+            { id: 'gaming', name: 'یاری و پشوو', icon: '🎮', color: 'amber' },
+            { id: 'home', name: 'ماڵەوە و گشتی', icon: '🏠', color: 'rose' }
+        ];
+
+        const COLOR_MAP = {
+            indigo: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 border-indigo-500/30',
+            cyan: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border-cyan-500/30',
+            emerald: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/30',
+            amber: 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30',
+            rose: 'bg-rose-500/15 text-rose-600 dark:text-rose-300 border-rose-500/30'
+        };
+
+        const KURDISH_DAYS = ['یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە', 'هەینی', 'شەممە'];
+        const KURDISH_MONTHS = ['کانوونی دووەم', 'شوبات', 'ئازار', 'نیسان', 'ئایار', 'حوزەیران', 'تەمموز', 'ئاب', 'ئەیلوول', 'تشرینی یەکەم', 'تشرینی دووەم', 'کانوونی یەکەم'];
+
+        function getTodayStr() {
+            const d = new Date();
+            return d.toISOString().split('T')[0];
+        }
+
+        function formatKurdishDate(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            const dayName = KURDISH_DAYS[d.getDay()];
+            const monthName = KURDISH_MONTHS[d.getMonth()];
+            const isToday = dateStr === getTodayStr();
+            return `${isToday ? 'ئەمڕۆ • ' : ''}${dayName}، ${d.getDate()}ی ${monthName}`;
+        }
+
+        let state = {
+            selectedDate: getTodayStr(),
+            selectedCategory: 'all',
+            selectedStatus: 'all',
+            categories: JSON.parse(localStorage.getItem('ks_categories')) || DEFAULT_CATEGORIES,
+            // پێکهاتەی داتاکان بەپێی ڕۆژ: { "2026-11-20": { tasks: [...], note: "..." } }
+            daysData: JSON.parse(localStorage.getItem('ks_days_data')) || {}
+        };
+
+        // ئەگەر هیچ داتایەک نەبوو بۆ ئەمڕۆ، خشتەیەکی نموونەیی دادەنێین بۆ ئەوەی بەکارهێنەر یەکسەر بیبینێت
+        function ensureDateInitialized(dateStr) {
+            if (!state.daysData[dateStr]) {
+                if (dateStr === getTodayStr() && Object.keys(state.daysData).length === 0) {
+                    state.daysData[dateStr] = {
+                        note: '',
+                        tasks: [
+                            { id: 't1', title: 'پێداچوونەوەی وانەکان و خوێندنەوە', category: 'study', startTime: '08:30', endTime: '10:00', priority: 'high', status: 'done' },
+                            { id: 't2', title: 'کارکردن لەسەر پڕۆژەی کۆدینگ و وێبسایت', category: 'coding', startTime: '10:30', endTime: '12:30', priority: 'high', status: 'done' },
+                            { id: 't3', title: 'وەرزشکردن و ڕاکردن بۆ ماوەی ٣٠ خولەک', category: 'sport', startTime: '16:30', endTime: '17:15', priority: 'medium', status: 'missed' },
+                            { id: 't4', title: 'یاریکردن و پشوودان لەگەڵ هاوڕێیان', category: 'gaming', startTime: '20:00', endTime: '21:30', priority: 'low', status: 'pending' },
+                            { id: 't5', title: 'ڕێکخستنی ژوورەکەم و ئامادەکاری بۆ سبەی', category: 'home', startTime: '22:00', endTime: '22:30', priority: 'medium', status: 'pending' }
+                        ]
+                    };
+                    saveState();
+                } else {
+                    state.daysData[dateStr] = { note: '', tasks: [] };
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('ks_categories', JSON.stringify(state.categories));
+            localStorage.setItem('ks_days_data', JSON.stringify(state.daysData));
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.remove('opacity-0', '-translate-y-2');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 2200);
+        }
+
+        // ==========================================
+        // ٣. پیشاندانی خشتە و پۆلەکان (Rendering)
+        // ==========================================
+        function renderCategories() {
+            const container = document.getElementById('category-tabs');
+            const select = document.getElementById('task-category');
+            const currentTasks = state.daysData[state.selectedDate]?.tasks || [];
+
+            let tabsHTML = `
+                <button onclick="setCategoryFilter('all')" class="shrink-0 px-3.5 py-2 rounded-2xl text-xs font-extrabold border transition flex items-center gap-1.5 ${state.selectedCategory === 'all' ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/25' : 'bg-white dark:bg-darkCard text-slate-600 dark:text-slate-300 border-slate-200 dark:border-darkBorder'}">
+                    <span>📋 هەموو خشتەکان</span>
+                    <span class="bg-black/15 dark:bg-white/15 px-1.5 py-0.5 rounded-full text-[10px]">${currentTasks.length}</span>
+                </button>
+            `;
+
+            select.innerHTML = '';
+
+            state.categories.forEach(cat => {
+                const count = currentTasks.filter(t => t.category === cat.id).length;
+                const isActive = state.selectedCategory === cat.id;
+                tabsHTML += `
+                    <button onclick="setCategoryFilter('${cat.id}')" class="shrink-0 px-3.5 py-2 rounded-2xl text-xs font-extrabold border transition flex items-center gap-1.5 ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/25' : 'bg-white dark:bg-darkCard text-slate-600 dark:text-slate-300 border-slate-200 dark:border-darkBorder'}">
+                        <span>${cat.icon} ${cat.name}</span>
+                        <span class="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded-full text-[10px]">${count}</span>
+                    </button>
+                `;
+                select.innerHTML += `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`;
+            });
+
+            container.innerHTML = tabsHTML;
+        }
+
+        function renderTasks() {
+            ensureDateInitialized(state.selectedDate);
+            const dayObj = state.daysData[state.selectedDate];
+            const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+
+            // ڕێکخستنی کارەکان بەپێی کاتژمێر
+            let tasks = [...dayObj.tasks].sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+
+            // نوێکردنەوەی ئامارەکانی سەرەوە
+            const total = tasks.length;
+            const doneCount = tasks.filter(t => t.status === 'done').length;
+            const missedCount = tasks.filter(t => t.status === 'missed').length;
+            const pendingCount = tasks.filter(t => t.status === 'pending').length;
+            const percent = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+
+            document.getElementById('stat-done').textContent = doneCount;
+            document.getElementById('stat-missed').textContent = missedCount;
+            document.getElementById('stat-pending').textContent = pendingCount;
+            document.getElementById('progress-percent').textContent = percent + '%';
+
+            // بازنەی SVG
+            const circle = document.getElementById('progress-circle');
+            const circumference = 201.06;
+            circle.style.strokeDashoffset = circumference - (percent / 100) * circumference;
+
+            // پەیامی هاندان بەپێی ڕێژە
+            const motTitle = document.getElementById('motivational-title');
+            if (total === 0) motTitle.textContent = 'خشتەی ئەمڕۆت بەتاڵە، کارێک زیاد بکە!';
+            else if (percent === 100) motTitle.textContent = 'نایابە! هەموو کارەکانی ئەمڕۆت کردووە 🏆';
+            else if (percent >= 60) motTitle.textContent = 'زۆر باشە! زۆرینەی کارەکانت جێبەجێ کردووە 🔥';
+            else if (missedCount > doneCount) motTitle.textContent = 'ئاگاداربە! هەندێک کارت لەدەستداوە، هەوڵبدە 💪';
+            else motTitle.textContent = 'بەردەوام بە لە جێبەجێکردنی خشتەکەت ✨';
+
+            // فلتەرکردن
+            const filtered = tasks.filter(t => {
+                const matchCat = state.selectedCategory === 'all' || t.category === state.selectedCategory;
+                const matchStatus = state.selectedStatus === 'all' || t.status === state.selectedStatus;
+                const matchSearch = !searchQuery || t.title.toLowerCase().includes(searchQuery);
+                return matchCat && matchStatus && matchSearch;
+            });
+
+            const container = document.getElementById('tasks-container');
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white dark:bg-darkCard border border-dashed border-slate-300 dark:border-darkBorder rounded-3xl p-8 text-center space-y-2">
+                        <div class="text-4xl">🗓️</div>
+                        <h3 class="font-bold text-sm">هیچ کارێک لەم بەشەدا نییە</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">دوگمەی (+) لە خوارەوە دابگرە بۆ زیادکردنی کار بۆ خشتەکەت</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(task => {
+                const cat = state.categories.find(c => c.id === task.category) || { name: 'گشتی', icon: '📌', color: 'indigo' };
+                const badgeClass = COLOR_MAP[cat.color] || COLOR_MAP.indigo;
+
+                let cardBorder = 'border-slate-200 dark:border-darkBorder';
+                let statusBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400">⏳ لە چاوەڕوانیدا</span>';
+                let titleStyle = 'text-slate-800 dark:text-slate-100';
+
+                if (task.status === 'done') {
+                    cardBorder = 'border-emerald-500/40 bg-emerald-500/[0.03]';
+                    statusBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">✅ ئەمەت کردووە</span>';
+                    titleStyle = 'line-through text-slate-400 dark:text-slate-500';
+                } else if (task.status === 'missed') {
+                    cardBorder = 'border-rose-500/40 bg-rose-500/[0.03]';
+                    statusBadge = '<span class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-rose-500/15 text-rose-600 dark:text-rose-400">❌ نەتکردووە</span>';
+                    titleStyle = 'text-rose-600/90 dark:text-rose-300';
+                }
+
+                const priorityDot = task.priority === 'high' ? '🔴' : (task.priority === 'medium' ? '🟡' : '🟢');
+
+                return `
+                    <div class="bg-white dark:bg-darkCard border ${cardBorder} rounded-3xl p-4 shadow-sm transition-all animate-fade-in">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="space-y-1.5 flex-1">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-lg border ${badgeClass}">
+                                        ${cat.icon} ${cat.name}
+                                    </span>
+                                    ${statusBadge}
+                                    <span class="text-[11px] text-slate-400 font-semibold flex items-center gap-1 mr-auto sm:mr-0">
+                                        <i class="ph ph-clock"></i>
+                                        ${task.startTime || '--:--'} - ${task.endTime || '--:--'}
+                                    </span>
+                                </div>
+                                <h3 class="font-extrabold text-sm sm:text-base ${titleStyle} pt-0.5">
+                                    ${priorityDot} ${escapeHTML(task.title)}
+                                </h3>
+                            </div>
+
+                            <!-- دوگمەکانی دەستکاری و سڕینەوە -->
+                            <div class="flex items-center gap-1">
+                                <button onclick="editTask('${task.id}')" title="دەستکاری" class="w-8 h-8 rounded-xl hover:bg-slate-100 dark:hover:bg-darkBg text-slate-400 hover:text-indigo-500 flex items-center justify-center transition">
+                                    <i class="ph-bold ph-pencil-simple"></i>
+                                </button>
+                                <button onclick="deleteTask('${task.id}')" title="سڕینەوە" class="w-8 h-8 rounded-xl hover:bg-slate-100 dark:hover:bg-darkBg text-slate-400 hover:text-rose-500 flex items-center justify-center transition">
+                                    <i class="ph-bold ph-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- دوگمەی خێرای دیاریکردن: کردم / نەمکرد -->
+                        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-darkBorder/80 flex items-center gap-2">
+                            <button onclick="setTaskStatus('${task.id}', 'done')" class="flex-1 py-2 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition active:scale-95 ${task.status === 'done' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/25' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'}">
+                                <i class="ph-bold ph-check-circle text-base"></i>
+                                <span>کردم (تەواو)</span>
+                            </button>
+                            <button onclick="setTaskStatus('${task.id}', 'missed')" class="flex-1 py-2 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition active:scale-95 ${task.status === 'missed' ? 'bg-rose-600 text-white shadow-md shadow-rose-500/25' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20'}">
+                                <i class="ph-bold ph-x-circle text-base"></i>
+                                <span>نەمکرد</span>
+                            </button>
+                            ${task.status !== 'pending' ? `
+                                <button onclick="setTaskStatus('${task.id}', 'pending')" title="گەڕاندنەوە بۆ ماوە" class="py-2 px-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-darkBg text-slate-500 hover:text-amber-500 transition">
+                                    <i class="ph-bold ph-arrow-counter-clockwise"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==========================================
+        // ٤. کردارەکان (گۆڕینی دۆخ، زیادکردن، سڕینەوە)
+        // ==========================================
+        function setTaskStatus(taskId, newStatus) {
+            const tasks = state.daysData[state.selectedDate].tasks;
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            task.status = newStatus;
+            saveState();
+            renderCategories();
+            renderTasks();
+            if (newStatus === 'done') showToast('ئافەرین! وەک «کراوە» تۆمارکرا ✅');
+            else if (newStatus === 'missed') showToast('وەک «نەکراوە» دیاریکرا ❌');
+        }
+
+        function setCategoryFilter(catId) {
+            state.selectedCategory = catId;
+            renderCategories();
+            renderTasks();
+        }
+
+        function setStatusFilter(status) {
+            state.selectedStatus = status;
+            document.querySelectorAll('.status-filter-btn').forEach(btn => {
+                if (btn.dataset.status === status) {
+                    btn.classList.add('bg-indigo-600', 'text-white');
+                } else {
+                    btn.classList.remove('bg-indigo-600', 'text-white');
+                }
+            });
+            renderTasks();
+        }
+
+        function openTaskModal() {
+            document.getElementById('edit-task-id').value = '';
+            document.getElementById('modal-title').textContent = 'زیادکردنی کار بۆ خشتە';
+            document.getElementById('task-form').reset();
+            if (state.selectedCategory !== 'all') {
+                document.getElementById('task-category').value = state.selectedCategory;
+            }
+            document.getElementById('task-modal').classList.remove('hidden');
+        }
+
+        function closeTaskModal() {
+            document.getElementById('task-modal').classList.add('hidden');
+        }
+
+        function editTask(taskId) {
+            const task = state.daysData[state.selectedDate].tasks.find(t => t.id === taskId);
+            if (!task) return;
+            document.getElementById('edit-task-id').value = task.id;
+            document.getElementById('modal-title').textContent = 'دەستکاریکردنی کار';
+            document.getElementById('task-title').value = task.title;
+            document.getElementById('task-category').value = task.category;
+            document.getElementById('task-priority').value = task.priority;
+            document.getElementById('task-start-time').value = task.startTime;
+            document.getElementById('task-end-time').value = task.endTime;
+            document.querySelector(`input[name="task-status"][value="${task.status}"]`).checked = true;
+            document.getElementById('task-modal').classList.remove('hidden');
+        }
+
+        function saveTask(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-task-id').value;
+            const title = document.getElementById('task-title').value.trim();
+            const category = document.getElementById('task-category').value;
+            const priority = document.getElementById('task-priority').value;
+            const startTime = document.getElementById('task-start-time').value;
+            const endTime = document.getElementById('task-end-time').value;
+            const status = document.querySelector('input[name="task-status"]:checked').value;
+
+            const tasks = state.daysData[state.selectedDate].tasks;
+            if (id) {
+                const idx = tasks.findIndex(t => t.id === id);
+                if (idx !== -1) tasks[idx] = { id, title, category, priority, startTime, endTime, status };
+                showToast('گۆڕانکارییەکان پاشەکەوت کران ✓');
+            } else {
+                tasks.push({ id: 't_' + Date.now(), title, category, priority, startTime, endTime, status });
+                showToast('کارەکە بۆ خشتەکەت زیادکرا +');
+            }
+
+            saveState();
+            closeTaskModal();
+            renderCategories();
+            renderTasks();
+        }
+
+        function deleteTask(taskId) {
+            state.daysData[state.selectedDate].tasks = state.daysData[state.selectedDate].tasks.filter(t => t.id !== taskId);
+            saveState();
+            renderCategories();
+            renderTasks();
+            showToast('لە خشتەکە سڕایەوە 🗑️');
+        }
+
+        // زیادکردنی بەشی نوێ
+        function openAddCategoryModal() {
+            document.getElementById('category-modal').classList.remove('hidden');
+        }
+        function closeAddCategoryModal() {
+            document.getElementById('category-modal').classList.add('hidden');
+        }
+        function saveNewCategory(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-cat-name').value.trim();
+            const icon = document.getElementById('new-cat-icon').value.trim() || '📌';
+            const color = document.getElementById('new-cat-color').value;
+            const id = 'cat_' + Date.now();
+            state.categories.push({ id, name, icon, color });
+            saveState();
+            closeAddCategoryModal();
+            renderCategories();
+            showToast(`بەشی «${name}» زیادکرا ✨`);
+        }
+
+        // تێبینی ڕۆژانە
+        function saveDailyNote() {
+            const val = document.getElementById('daily-note').value;
+            state.daysData[state.selectedDate].note = val;
+            saveState();
+            const badge = document.getElementById('note-saved-badge');
+            badge.classList.remove('opacity-0');
+            clearTimeout(window.noteTimer);
+            window.noteTimer = setTimeout(() => badge.classList.add('opacity-0'), 1500);
+        }
+
+        // ==========================================
+        // ٥. پوختەی کۆتایی ڕۆژ و ئامار (چیت کرد و چیت نەکرد)
+        // ==========================================
+        function openEndOfDayModal() {
+            const tasks = state.daysData[state.selectedDate]?.tasks || [];
+            const done = tasks.filter(t => t.status === 'done');
+            const notDone = tasks.filter(t => t.status !== 'done');
+            const missed = tasks.filter(t => t.status === 'missed');
+            const pending = tasks.filter(t => t.status === 'pending');
+
+            document.getElementById('eod-date-subtitle').textContent = formatKurdishDate(state.selectedDate);
+            document.getElementById('eod-done-num').textContent = done.length;
+            document.getElementById('eod-missed-num').textContent = missed.length;
+            document.getElementById('eod-pending-num').textContent = pending.length;
+
+            document.getElementById('eod-done-items').innerHTML = done.length
+                ? done.map(t => `<div class="bg-emerald-500/10 px-3 py-2 rounded-xl font-bold text-emerald-700 dark:text-emerald-300">✅ ${escapeHTML(t.title)} <span class="opacity-60 text-[10px]">(${t.startTime})</span></div>`).join('')
+                : '<p class="text-slate-400">هێشتا هیچ کارێکت وەک «کراوە» دیاری نەکردووە.</p>';
+
+            document.getElementById('eod-missed-items').innerHTML = notDone.length
+                ? notDone.map(t => `<div class="bg-rose-500/10 px-3 py-2 rounded-xl font-bold text-rose-700 dark:text-rose-300">${t.status === 'missed' ? '❌' : '⏳'} ${escapeHTML(t.title)} <span class="opacity-60 text-[10px]">(${t.status === 'missed' ? 'نەکراوە' : 'ماوە'})</span></div>`).join('')
+                : '<p class="text-emerald-500 font-bold">هیچ کارێک نەماوەتەوە، هەموویت تەواو کردووە! 🎉</p>';
+
+            document.getElementById('eod-modal').classList.remove('hidden');
+        }
+
+        function closeEndOfDayModal() {
+            document.getElementById('eod-modal').classList.add('hidden');
+        }
+
+        function markAllPendingAsMissed() {
+            const tasks = state.daysData[state.selectedDate]?.tasks || [];
+            tasks.forEach(t => { if (t.status === 'pending') t.status = 'missed'; });
+            saveState();
+            renderTasks();
+            openEndOfDayModal();
+            showToast('هەموو کارە ماوەکان کران بە «نەکراوە»');
+        }
+
+        function renderSummaryTab() {
+            const tasks = state.daysData[state.selectedDate]?.tasks || [];
+            const done = tasks.filter(t => t.status === 'done');
+            const notDone = tasks.filter(t => t.status !== 'done');
+
+            document.getElementById('summary-done-count').textContent = done.length;
+            document.getElementById('summary-missed-count').textContent = notDone.length;
+
+            document.getElementById('summary-done-list').innerHTML = done.length
+                ? done.map(t => `<li class="bg-white/70 dark:bg-darkBg/60 p-2.5 rounded-xl font-bold flex items-center justify-between"><span>${escapeHTML(t.title)}</span><span class="text-[10px] opacity-70">${t.startTime}</span></li>`).join('')
+                : '<li class="text-slate-400">هیچ کارێکی تەواوکراو نییە</li>';
+
+            document.getElementById('summary-missed-list').innerHTML = notDone.length
+                ? notDone.map(t => `<li class="bg-white/70 dark:bg-darkBg/60 p-2.5 rounded-xl font-bold flex items-center justify-between"><span>${escapeHTML(t.title)}</span><span class="text-[10px] text-rose-500">${t.status === 'missed' ? 'نەکراوە' : 'ماوە'}</span></li>`).join('')
+                : '<li class="text-emerald-500 font-bold">هەموو کارەکان کراون!</li>';
+
+            // ئامار بەپێی پۆلەکان
+            const catStats = document.getElementById('category-stats-list');
+            catStats.innerHTML = state.categories.map(cat => {
+                const catTasks = tasks.filter(t => t.category === cat.id);
+                const catDone = catTasks.filter(t => t.status === 'done').length;
+                const pct = catTasks.length === 0 ? 0 : Math.round((catDone / catTasks.length) * 100);
+                return `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs font-bold">
+                            <span>${cat.icon} ${cat.name}</span>
+                            <span>${catDone} لە ${catTasks.length} (${pct}%)</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-200 dark:bg-darkBg rounded-full overflow-hidden">
+                            <div class="h-full bg-indigo-500 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function copySummaryReport() {
+            const tasks = state.daysData[state.selectedDate]?.tasks || [];
+            const done = tasks.filter(t => t.status === 'done');
+            const notDone = tasks.filter(t => t.status !== 'done');
+            const note = state.daysData[state.selectedDate]?.note || '';
+
+            let text = `📅 پوختەی خشتەی ڕۆژانە (${formatKurdishDate(state.selectedDate)})\n`;
+            text += `--------------------------\n`;
+            text += `✅ ئەوانەی کردوومن (${done.length}):\n`;
+            text += done.length ? done.map(t => `• ${t.title}`).join('\n') : '• هیچ';
+            text += `\n\n❌ ئەوانەی نەمکردوون (${notDone.length}):\n`;
+            text += notDone.length ? notDone.map(t => `• ${t.title}`).join('\n') : '• هیچ';
+            if (note) text += `\n\n📝 تێبینی: ${note}`;
+
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('پوختەی ڕۆژانە کۆپی کرا 📋');
+        }
+
+        // ==========================================
+        // ٦. گۆڕینی بەشەکان و تۆماری ڕۆژانی پێشوو
+        // ==========================================
+        function switchTab(tabName) {
+            ['today', 'ai', 'summary', 'history'].forEach(v => {
+                document.getElementById('view-' + v).classList.add('hidden');
+            });
+            document.getElementById('view-' + tabName).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-indigo-600', 'dark:text-indigo-400');
+                btn.classList.add('text-slate-500', 'dark:text-slate-400');
+            });
+            const activeBtn = document.getElementById('nav-' + tabName);
+            if (activeBtn) {
+                activeBtn.classList.add('text-indigo-600', 'dark:text-indigo-400');
+                activeBtn.classList.remove('text-slate-500', 'dark:text-slate-400');
+            }
+
+            if (tabName === 'summary') renderSummaryTab();
+            if (tabName === 'history') renderHistoryTab();
+        }
+
+        function renderHistoryTab() {
+            document.getElementById('date-picker').value = state.selectedDate;
+            const list = document.getElementById('history-days-list');
+            const dates = Object.keys(state.daysData).sort((a, b) => b.localeCompare(a));
+
+            list.innerHTML = dates.map(dateStr => {
+                const tasks = state.daysData[dateStr].tasks || [];
+                const done = tasks.filter(t => t.status === 'done').length;
+                const missed = tasks.filter(t => t.status === 'missed').length;
+                const isSelected = dateStr === state.selectedDate;
+
+                return `
+                    <div onclick="changeSelectedDate('${dateStr}'); switchTab('today');" class="cursor-pointer p-3.5 rounded-2xl border transition flex items-center justify-between ${isSelected ? 'border-indigo-500 bg-indigo-500/10' : 'border-slate-200 dark:border-darkBorder hover:border-indigo-400'}">
+                        <div>
+                            <div class="font-extrabold text-sm">${formatKurdishDate(dateStr)}</div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">کۆی کارەکان: ${tasks.length}</div>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs font-bold">
+                            <span class="text-emerald-500">✅ ${done}</span>
+                            <span class="text-rose-500">❌ ${missed}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function changeSelectedDate(newDate) {
+            if (!newDate) return;
+            state.selectedDate = newDate;
+            ensureDateInitialized(newDate);
+            updateDateUI();
+            renderCategories();
+            renderTasks();
+        }
+
+        function goToToday() {
+            changeSelectedDate(getTodayStr());
+            switchTab('today');
+        }
+
+        function updateDateUI() {
+            const formatted = formatKurdishDate(state.selectedDate);
+            document.getElementById('header-date-display').textContent = formatted;
+            document.getElementById('selected-day-badge').textContent = state.selectedDate === getTodayStr() ? 'خشتەی ئەمڕۆ' : formatted;
+            document.getElementById('daily-note').value = state.daysData[state.selectedDate]?.note || '';
+        }
+
+        function resetToSampleData() {
+            localStorage.removeItem('ks_days_data');
+            localStorage.removeItem('ks_categories');
+            state.categories = [...DEFAULT_CATEGORIES];
+            state.daysData = {};
+            state.selectedDate = getTodayStr();
+            ensureDateInitialized(state.selectedDate);
+            updateDateUI();
+            renderCategories();
+            renderTasks();
+            switchTab('today');
+            showToast('خشتەکان ڕێکخرانەوە 🔄');
+        }
+
+        // دۆخی تاریک و ڕووناک
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.className = 'ph-fill ph-moon text-lg';
+                localStorage.setItem('ks_theme', 'light');
+            } else {
+                html.classList.add('dark');
+                icon.className = 'ph-fill ph-sun text-lg';
+                localStorage.setItem('ks_theme', 'dark');
+            }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+        }
+
+        // ==========================================
+        // ٧. بەشی AI سەعی (Gemini API Study Assistant)
+        // ==========================================
+        let aiChatHistory = [];
+        let pendingAiImage = null; // { mimeType, base64, dataUrl }
+        let lastAiSuggestedTasks = {}; // بۆ هەڵگرتنی خشتە پێشنیارکراوەکان بەپێی ID
+
+        function handleAiImageSelect(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const dataUrl = evt.target.result;
+                const base64 = dataUrl.split(',')[1];
+                pendingAiImage = {
+                    mimeType: file.type || 'image/jpeg',
+                    base64: base64,
+                    dataUrl: dataUrl
+                };
+                document.getElementById('ai-image-preview-thumb').src = dataUrl;
+                document.getElementById('ai-image-preview-bar').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeAiImage() {
+            pendingAiImage = null;
+            document.getElementById('ai-image-input').value = '';
+            document.getElementById('ai-image-preview-bar').classList.add('hidden');
+        }
+
+        function clearAiChat() {
+            aiChatHistory = [];
+            lastAiSuggestedTasks = {};
+            const container = document.getElementById('ai-chat-messages');
+            container.innerHTML = `
+                <div class="flex items-start gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 text-sm font-bold shadow">AI</div>
+                    <div class="bg-slate-100 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl rounded-tr-sm p-3.5 text-xs sm:text-sm leading-relaxed">
+                        گفتوگۆکە پاککرایەوە ✨ چ پرسیارێکی سەعیت هەیە؟
+                    </div>
+                </div>
+            `;
+            showToast('گفتوگۆی AI سەعی پاککرایەوە');
+        }
+
+        function triggerQuickAi(type) {
+            const input = document.getElementById('ai-user-input');
+            const currentStudyTasks = (state.daysData[state.selectedDate]?.tasks || [])
+                .filter(t => t.category === 'study')
+                .map(t => `${t.title} (${t.startTime}-${t.endTime})`)
+                .join('، ');
+
+            if (type === 'schedule') {
+                const extra = currentStudyTasks ? ` (ئەم کارانەم لە بەشی خوێندن هەیە: ${currentStudyTasks})` : '';
+                input.value = `خشتەیەکی سەعی ڕێکوپێکی ئەمڕۆم بۆ دابنێ بە شێوازی پۆمۆدۆرۆ لەگەڵ کاتەکانی${extra}`;
+                sendAiMessage(new Event('submit'));
+            } else if (type === 'explain') {
+                input.value = 'بابەتێکم بۆ ڕوون بکەرەوە دەربارەی: ';
+                input.focus();
+            } else if (type === 'quiz') {
+                input.value = 'تاقیکردنەوەیەکی ٥ پرسیاریم لێ بکە دەربارەی: ';
+                input.focus();
+            } else if (type === 'tips') {
+                input.value = 'چۆن بە خێرایی و بەبێ بێزاربوون و خەواڵوویی سەعی بکەم و زانیارییەکانم لەبیر نەچێتەوە؟';
+                sendAiMessage(new Event('submit'));
+            }
+        }
+
+        async function fetchGeminiWithBackoff(url, payload, maxRetries = 4) {
+            let delay = 1000;
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        if ((response.status === 429 || response.status >= 500) && attempt < maxRetries) {
+                            await new Promise(r => setTimeout(r, delay));
+                            delay *= 2;
+                            continue;
+                        }
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (err) {
+                    if (attempt === maxRetries) throw err;
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        async function sendAiMessage(e) {
+            e.preventDefault();
+            const inputEl = document.getElementById('ai-user-input');
+            const sendBtn = document.getElementById('ai-send-btn');
+            const text = inputEl.value.trim();
+            if (!text && !pendingAiImage) return;
+
+            const chatBox = document.getElementById('ai-chat-messages');
+            const imgToSend = pendingAiImage;
+
+            // زیادکردنی نامەی بەکارهێنەر بۆ شاشە
+            const userBubble = document.createElement('div');
+            userBubble.className = 'flex items-start justify-end gap-2 animate-fade-in';
+            userBubble.innerHTML = `
+                <div class="bg-indigo-600 text-white rounded-2xl rounded-tl-sm p-3.5 text-xs sm:text-sm leading-relaxed max-w-[85%] shadow-sm space-y-2">
+                    ${imgToSend ? `<img src="${imgToSend.dataUrl}" class="max-h-44 rounded-xl border border-white/20 mb-1">` : ''}
+                    ${text ? `<p class="whitespace-pre-wrap">${escapeHTML(text)}</p>` : ''}
+                </div>
+            `;
+            chatBox.appendChild(userBubble);
+
+            // پاککردنەوەی ئینپوت
+            inputEl.value = '';
+            removeAiImage();
+            sendBtn.disabled = true;
+            sendBtn.classList.add('opacity-50');
+
+            // نیشاندەری نووسین (Typing indicator)
+            const loadingId = 'ai-typing-' + Date.now();
+            const loadingBubble = document.createElement('div');
+            loadingBubble.id = loadingId;
+            loadingBubble.className = 'flex items-start gap-2.5 animate-fade-in';
+            loadingBubble.innerHTML = `
+                <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">AI</div>
+                <div class="bg-slate-100 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl rounded-tr-sm px-4 py-3 text-xs text-slate-500 flex items-center gap-1.5">
+                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce"></span>
+                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.15s"></span>
+                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
+                    <span class="mr-1 font-bold">مامۆستا بیر دەکاتەوە...</span>
+                </div>
+            `;
+            chatBox.appendChild(loadingBubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // ئامادەکردنی پەیام بۆ Gemini
+            const userParts = [];
+            if (text) userParts.push({ text });
+            if (imgToSend) {
+                userParts.push({
+                    inlineData: {
+                        mimeType: imgToSend.mimeType,
+                        data: imgToSend.base64
+                    }
+                });
+            }
+            aiChatHistory.push({ role: 'user', parts: userParts });
+
+            const systemInstructionText = `تۆ «مامۆستای زیرەک (AI سەعی)»یت، یاریدەدەرێکی تایبەت و هاندەری خوێندن و سەعیکردنیت بە زمانی شیرینی کوردی (سۆرانی).
+ئەرکەکانت:
+1. ڕوونکردنەوەی بابەتەکانی قوتابخانە و زانکۆ (بیرکاری، فیزیا، کیمیا، زیندەزانی، ئینگلیزی، کوردی، عەرەبی، مێژوو، جوگرافیا، کۆمپیوتەر) بە شێوەیەکی سادە، خاڵبەندی کراو و تێگەیشتوو.
+2. شیکارکردنی وێنەی پرسیار و لاپەڕەی کتێبەکان هەنگاو بە هەنگاو.
+3. دروستکردنی پرسیار و تاقیکردنەوە (Quiz) بۆ هەڵسەنگاندنی قوتابی.
+4. ئەگەر بەکارهێنەر داوای خشتەی سەعی یان پلانێکی خوێندنی کرد، جگە لە ڕوونکردنەوەکەت، لە کۆتایی وەڵامەکەتدا بەم فۆرماتە وردە JSONـەکە دابنێ تاکو بەرنامەکە بتوانێت دوگمەی «زیادکردن بۆ خشتەی خوێندن»ی بۆ دروست بکات:
+\`\`\`tasks_json
+[{"title": "ناوی وانەکە", "startTime": "16:00", "endTime": "16:45"}]
+\`\`\`
+هەمیشە بە شێوازێکی ڕێزدار، دڵسۆزانە و هاندەر بدوێ.`;
+
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: aiChatHistory,
+                    systemInstruction: {
+                        parts: [{ text: systemInstructionText }]
+                    }
+                };
+
+                const result = await fetchGeminiWithBackoff(apiUrl, payload);
+                const replyText = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'ببورە، نەمتوانی وەڵامەکە وەربگرم. تکایە دووبارە هەوڵبدەرەوە.';
+
+                aiChatHistory.push({ role: 'model', parts: [{ text: replyText }] });
+                document.getElementById(loadingId)?.remove();
+
+                // پشکنین بۆ بوونی خشتەی پێشنیارکراوی JSON لە وەڵامەکەدا
+                let cleanText = replyText;
+                let extractedTasks = [];
+                const jsonMatch = replyText.match(/```tasks_json\s*([\s\S]*?)```/);
+                if (jsonMatch) {
+                    cleanText = replyText.replace(/```tasks_json[\s\S]*?```/, '').trim();
+                    try {
+                        extractedTasks = JSON.parse(jsonMatch[1].trim());
+                    } catch (_) {}
+                }
+
+                const batchId = 'batch_' + Date.now();
+                if (Array.isArray(extractedTasks) && extractedTasks.length > 0) {
+                    lastAiSuggestedTasks[batchId] = extractedTasks;
+                }
+
+                const aiBubble = document.createElement('div');
+                aiBubble.className = 'flex items-start gap-2.5 animate-fade-in';
+                aiBubble.innerHTML = `
+                    <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 text-sm font-bold shadow">AI</div>
+                    <div class="bg-slate-100 dark:bg-darkBg border border-slate-200 dark:border-darkBorder rounded-2xl rounded-tr-sm p-3.5 text-xs sm:text-sm leading-relaxed max-w-[88%] space-y-3">
+                        <div class="whitespace-pre-wrap">${formatAiMarkdown(cleanText)}</div>
+                        ${extractedTasks.length > 0 ? `
+                            <div class="pt-2 border-t border-slate-200 dark:border-darkBorder">
+                                <button onclick="addAiTasksToSchedule('${batchId}')" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow transition">
+                                    <i class="ph-bold ph-calendar-plus text-base"></i>
+                                    <span>زیادکردن بۆ خشتەی خوێندن (${extractedTasks.length} بڕگە)</span>
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                chatBox.appendChild(aiBubble);
+            } catch (err) {
+                document.getElementById(loadingId)?.remove();
+                const errBubble = document.createElement('div');
+                errBubble.className = 'flex items-start gap-2.5';
+                errBubble.innerHTML = `
+                    <div class="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">!</div>
+                    <div class="bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-300 rounded-2xl p-3 text-xs font-bold">
+                        کێشەیەک لە پەیوەندیکردن بە AI ڕوویدا. دڵنیابە لە بوونی ئینتەرنێت و دووبارە هەوڵبدەرەوە.
+                    </div>
+                `;
+                chatBox.appendChild(errBubble);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.classList.remove('opacity-50');
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        function formatAiMarkdown(text) {
+            let safe = escapeHTML(text);
+            safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-600 dark:text-indigo-300 font-extrabold">$1</strong>');
+            return safe;
+        }
+
+        function addAiTasksToSchedule(batchId) {
+            const suggested = lastAiSuggestedTasks[batchId];
+            if (!suggested || !suggested.length) return;
+
+            ensureDateInitialized(state.selectedDate);
+            // دڵنیابوونەوە لە بوونی پۆلی خوێندن
+            if (!state.categories.some(c => c.id === 'study')) {
+                state.categories.unshift({ id: 'study', name: 'خوێندن و وانە', icon: '📚', color: 'indigo' });
+            }
+
+            suggested.forEach((item, idx) => {
+                state.daysData[state.selectedDate].tasks.push({
+                    id: 'ai_t_' + Date.now() + '_' + idx,
+                    title: item.title || 'سەعیکردن',
+                    category: 'study',
+                    startTime: item.startTime || '16:00',
+                    endTime: item.endTime || '16:45',
+                    priority: 'high',
+                    status: 'pending'
+                });
+            });
+
+            saveState();
+            renderCategories();
+            renderTasks();
+            showToast(`${suggested.length} بڕگەی سەعی زیادکرا بۆ خشتەی خوێندن 📚✅`);
+        }
+
+        // دەستپێکردنی ئەپ
+        window.onload = function () {
+            if (localStorage.getItem('ks_theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-icon').className = 'ph-fill ph-moon text-lg';
+            }
+            ensureDateInitialized(state.selectedDate);
+            updateDateUI();
+            setStatusFilter('all');
+            renderCategories();
+            renderTasks();
+        };
+    </script>
+</body>
+</html>
+```
